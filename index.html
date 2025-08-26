@@ -10,16 +10,7 @@
     body { font-family: Orbitron, sans-serif; color: #222; background: #f9f9f9; scroll-behavior: smooth }
     a { text-decoration: none; color: inherit }
 
-    header {
-      position: absolute;
-      top: 20px;
-      left: 30px;
-      z-index: 10;
-    }
 
-    header img {
-      height: 60px;
-    }
 
     .hero {
       position: relative;
@@ -51,26 +42,20 @@
       text-align: center;
       color: #fff;
       z-index: 2;
-      animation: fadeIn 1.5s ease-out;
     }
 
     .hero-content img {
       width: 150px;
       margin-bottom: 20px;
-      animation: fadeIn 2s ease-in;
     }
 
     .hero h1 {
       font-size: 3rem;
-      opacity: 0;
-      animation: textIn 1s 0.3s forwards;
     }
 
     .hero p {
       font-size: 1.2rem;
       margin: 1rem 0;
-      opacity: 0;
-      animation: textIn 1s 0.8s forwards;
     }
 
     .cta {
@@ -81,9 +66,6 @@
       border-radius: 5px;
       font-size: 1.1rem;
       cursor: pointer;
-      transform: translateY(20px);
-      opacity: 0;
-      animation: textIn 1s 1.3s forwards;
       transition: transform .3s, background .3s;
     }
 
@@ -92,15 +74,7 @@
       background: #e10056;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0 }
-      to { opacity: 1 }
-    }
 
-    @keyframes textIn {
-      from { opacity: 0; transform: translateY(20px) }
-      to { opacity: 1; transform: translateY(0) }
-    }
 
     section.features {
       padding: 4em 2em;
@@ -179,13 +153,14 @@
       left: 0;
       right: 0;
       opacity: 0;
-      transition: opacity 0.8s ease-in-out;
+      visibility: hidden;
       pointer-events: none;
       user-select: none;
     }
 
     .rotating-text p.active {
       opacity: 1;
+      visibility: visible;
       pointer-events: auto;
       user-select: text;
     }
@@ -196,19 +171,7 @@
       font-weight: 700;
     }
 
-    .vertical-label {
-      position: absolute;
-      left: 5em;
-      top: 75%;
-      transform: rotate(-90deg) translateY(-50%);
-      transform-origin: left center;
-      font-size: 1.2rem;
-      color: rgba(255, 255, 255, 0.2);
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      z-index: 1;
-      pointer-events: none;
-    }
+
 
     /*.vertical-scroll-label {
       position: fixed;
@@ -233,15 +196,9 @@
 </head>
 <body>
 
-  <header>
-    <img src="logo.png" alt="Blacksheep Meedia Logo">
-  </header>
+
 
   <section class="hero" id="hero">
-    <div class="vertical-label" style="text-align: center;">
-      <p>Media Products & Consulting Services.</p>
-      <p>Leverage our AI expertise</p>
-    </div>
     <canvas id="bgCanvas"></canvas>
     <div class="hero-content">
       <img src="logo.png" alt="Global News Scanner">
@@ -411,43 +368,42 @@
     // Rotating sentence effect — only one visible
     const sentences = document.querySelectorAll('.rotating-text p');
     let currentIndex = 0;
+    let isAnimating = false;
+    let intervalId = null;
 
-    function fadeRotate() {
+    function showNextSentence() {
+      if (isAnimating) return;
+      isAnimating = true;
+
       const current = sentences[currentIndex];
-
-      // Start fade out by removing active class (opacity transitions to 0)
+      
+      // Hide current sentence
       current.classList.remove('active');
-
-      // Wait for fade out transition (800ms)
-      setTimeout(() => {
-        // Hide the faded out element (display:none)
-        current.style.display = 'none';
-
-        // Increment index
-        currentIndex = (currentIndex + 1) % sentences.length;
-
-        const next = sentences[currentIndex];
-        // Show next element (display:block) with opacity 0 initially
-        next.style.display = 'block';
-
-        // Small delay needed before adding active to trigger transition
-        setTimeout(() => {
-          next.classList.add('active');
-        }, 50);
-
-      }, 800);
-
-      // Repeat every 4 seconds total (fade out + visible)
-      setTimeout(fadeRotate, 4000);
+      
+      // Show next sentence immediately
+      currentIndex = (currentIndex + 1) % sentences.length;
+      const next = sentences[currentIndex];
+      next.classList.add('active');
+      isAnimating = false;
     }
 
     // On load: show first sentence immediately
     window.addEventListener('load', () => {
-      sentences.forEach(p => (p.style.display = 'none'));
-      sentences[0].style.display = 'block';
+      // Hide all sentences initially
+      sentences.forEach(p => {
+        p.classList.remove('active');
+      });
+      
+      // Show first sentence
       sentences[0].classList.add('active');
 
-      setTimeout(fadeRotate, 4000);
+      // Start rotation after 4 seconds
+      setTimeout(() => {
+        // Trigger first transition manually
+        showNextSentence();
+        // Then start the interval for subsequent transitions
+        intervalId = setInterval(showNextSentence, 4000);
+      }, 4000);
     });
 
 
